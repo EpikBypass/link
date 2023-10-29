@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epik Bypass</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            background-color: #36393f;
+            position: relative;
+        }
+
+        #container {
+            background: rgba(47, 49, 54, 0.9); /* Semi-transparent gray color */
+            padding: 60px;
+            border-radius: 20px;
+            box-shadow: 0 12px 18px rgba(0, 0, 0, 0.4);
+            transform-style: preserve-3d;
+            transition: transform 0.3s;
+        }
+
+        #next-button {
+            background-color: #7289da;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 16px 32px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        #next-button:hover {
+            background-color: #677bc4;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+        }
+
+        #next-button:active {
+            transform: translateY(3px);
+        }
+
+        h1 {
+            color: #fff;
+            font-size: 48px;
+            margin-bottom: 30px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        p {
+            color: #ccc;
+            font-size: 24px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .bottom-text {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 18px;
+            transition: color 0.3s;
+        }
+
+        .bottom-text:hover {
+            color: #fff;
+        }
+
+        .elevate {
+            transform: translate3d(0, 0, 30px);
+        }
+
+        /* Rain effect styles */
+        #rain-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Canvas for the rain effect -->
+    <canvas id="rain-container" class="other"></canvas>
+    <div id="container" onmousemove="rotateContainer(event)" onmouseenter="slowDownRain()"
+        onmouseleave="restoreRainSpeed()">
+        <h1 class="elevate">Epik Bypass</h1>
+        <p class="elevate">Click the button below to continue 🤖</p>
+        <button id="next-button" class="elevate" onclick="redirectToAnotherSite()">I am not a robot</button>
+    </div>
+    <p class="bottom-text other">EpikHub with all your favorite games is coming out soon!</p>
+
+    <script>
+        let originalRainSpeed = 5; // The original raindrop speed
+        let currentRainSpeed = originalRainSpeed;
+        let targetRainSpeed = originalRainSpeed;
+
+        function rotateContainer(event) {
+            const container = document.getElementById('container');
+            const containerRect = container.getBoundingClientRect();
+            const centerX = containerRect.left + containerRect.width / 2;
+            const centerY = containerRect.top + containerRect.height / 2;
+            const angleX = (event.clientY - centerY) / containerRect.height * -30; // Inverted angle
+            const angleY = (event.clientX - centerX) / containerRect.width * 30;
+
+            const angleTopLeft = Math.atan2(event.clientY - centerY, event.clientX - centerX) * -15; // Inverted angle
+            const angleTopRight = Math.PI - angleTopLeft;
+            const angleBottomLeft = -angleTopLeft;
+            const angleBottomRight = Math.PI + angleTopLeft;
+
+            container.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) rotateZ(0)`;
+        }
+
+        function resetContainer() {
+            const container = document.getElementById('container');
+            container.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) rotateZ(0deg)';
+        }
+
+        function slowDownRain() {
+            targetRainSpeed = 2; // Set the target speed when hovering
+            requestAnimationFrame(updateRainSpeed);
+        }
+
+        function restoreRainSpeed() {
+            targetRainSpeed = originalRainSpeed; // Restore the original speed when not hovering
+            requestAnimationFrame(updateRainSpeed);
+        }
+
+        function updateRainSpeed() {
+            // Smoothly transition the raindrop speed
+            const speedChange = targetRainSpeed - currentRainSpeed;
+            if (Math.abs(speedChange) > 0.01) {
+                currentRainSpeed += 0.01 * Math.sign(speedChange);
+                requestAnimationFrame(updateRainSpeed);
+            }
+            else {
+                currentRainSpeed = targetRainSpeed;
+            }
+
+            const canvas = document.getElementById('rain-container');
+            const raindrops = canvas.raindrops; // Access raindrops array from the canvas
+
+            // Apply the current speed to all raindrops
+            for (const raindrop of raindrops) {
+                raindrop.speed = currentRainSpeed;
+            }
+        }
+
+        function redirectToAnotherSite() {
+            window.location.href = 'https://example.com';
+        }
+
+        const canvas = document.getElementById('rain-container');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const raindrops = [];
+        for (let i = 0; i < 250; i++) {
+            const size = Math.random() * 20 + 10;
+            const opacity = size < 15 ? 0.5 : Math.random(); // Smaller raindrops are lighter
+            raindrops.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                length: size,
+                opacity: opacity,
+                speed: originalRainSpeed, // Set the initial speed
+            });
+        }
+
+        // Attach the raindrops array to the canvas element
+        canvas.raindrops = raindrops;
+
+        function drawRain() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 2.5;
+
+            for (const raindrop of raindrops) {
+                ctx.beginPath();
+                ctx.moveTo(raindrop.x, raindrop.y);
+                ctx.lineTo(
+                    raindrop.x,
+                    raindrop.y + raindrop.length * (raindrop.speed / 5)
+                );
+                ctx.globalAlpha = raindrop.opacity;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+
+                if (raindrop.y > canvas.height) {
+                    raindrop.x = Math.random() * canvas.width;
+                    raindrop.y = 0;
+                }
+            }
+        }
+
+        function updateRain() {
+            for (const raindrop of raindrops) {
+                raindrop.y += raindrop.speed;
+            }
+        }
+
+        function animate() {
+            drawRain();
+            updateRain();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        document.getElementById('container').addEventListener('mouseleave', resetContainer);
+    </script>
+</body>
+
+</html>
